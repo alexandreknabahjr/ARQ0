@@ -1,0 +1,158 @@
+ORG 0							; a partir da posicao de memoria 0
+
+inicializacao:  	LDA c0				; inicializacao das variaveis auxiliares e da resposta final com a constante zero
+			STA p_parte_alta
+			STA aux_parte_alta
+			STA P
+
+deslocamento_a:		LDA a				; carregamento da variavel "a"					
+			SHL				; deslocamento da variavel em 1 bit para a esquerda
+			STA p_parte_baixa		; salva na parte baixa 
+			LDA p_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA p_parte_alta		; salva na parte alta
+
+deslocamento_d:		LDA d				; carregamento da variavel "d"
+			SHL 				; deslocamento da variavel em 1 bit para a esquerda
+			STA aux_parte_baixa		; salva na parte baixa
+			LDA aux_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA aux_parte_alta		; salva na parte alta
+
+soma_d:			LDA p_parte_alta		; soma das partes altas e partes baixas das variaveis "a" e "d" deslocadas. Caso haja ocorrencia de carry,
+			ADD aux_parte_alta		; a parte alta dessa soma e acrescida em 1.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ADD aux_parte_baixa
+			STA p_parte_baixa
+			JNC deslocamento_b
+			LDA p_parte_alta
+			ADD c1
+			STA p_parte_alta
+
+deslocamento_b:		LDA c0 				; inicializacao da parte alta com a constante zero	
+			STA aux_parte_alta		
+			LDA b				; carregamento da variavel "b"  
+			SHL 				; deslocamento da variavel em 1 bit para a esquerda
+			STA aux_parte_baixa		; salva na parte baixa 
+			STA aux_2_parte_baixa		; salva em outra parte baixa, para encurtar o codigo
+			LDA aux_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA aux_parte_alta		; salva na parte alta
+
+soma_b:			LDA p_parte_alta		; soma das partes altas e partes baixas da soma anterior com as partes altas e baixas da variavel "b"
+			ADD aux_parte_alta		; deslocada. Caso haja ocorrencia de carry, a parte alta desse resultado e acrescido em 1.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ADD aux_parte_baixa
+			STA p_parte_baixa
+			JNC deslocamento_b2
+			LDA p_parte_alta
+			ADD c1
+			STA p_parte_alta
+
+deslocamento_b2:	LDA aux_2_parte_baixa		; carregamento da variavel "b" ja deslocada 	
+			SHL				; deslocamento da variavel em 1 bit para a esquerda
+			STA aux_parte_baixa		; salva na parte baixa
+			LDA aux_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA aux_parte_alta		; salva na parte alta
+
+soma_b2:		LDA p_parte_alta		; soma das partes altas e partes baixas da soma anterior com as partes altas e baixas da variavel "b"
+			ADD aux_parte_alta		; deslocada mais uma vez. Caso haja ocorrencia de carry, a parte alta desse resultado e acrescido em 1.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ADD aux_parte_baixa
+			STA p_parte_baixa
+			JNC deslocamento_c
+			LDA p_parte_alta
+			ADD c1
+			STA p_parte_alta
+
+deslocamento_c:		LDA c0 				; inicializacao da parte alta com a constante zero
+			STA aux_parte_alta
+			LDA c				; carregamento da variavel "c"
+			SHL				; deslocamento da variavel em 1 bit para a esquerda
+			STA aux_parte_baixa		; salva na parte baixa 
+			STA aux_2_parte_baixa		; salva em outra parte baixa, para encurtar o codigo
+			LDA aux_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA aux_parte_alta		; salva na parte alta
+
+soma_c:			LDA p_parte_alta		; soma das partes altas e partes baixas da soma anterior com as partes altas e baixas da variavel "c"
+			ADD aux_parte_alta		; deslocada. Caso haja ocorrencia de carry, a parte alta desse resultado e acrescido em 1.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ADD aux_parte_baixa
+			STA p_parte_baixa
+			JNC deslocamento_c2
+			LDA p_parte_alta
+			ADD c1
+			STA p_parte_alta
+
+deslocamento_c2:	LDA aux_2_parte_baixa		; carregamento da variavel "c" ja deslocada 
+			SHL				; deslocamento da variavel em 1 bit para a esquerda
+			STA aux_parte_baixa		; salva na parte baixa
+			LDA aux_parte_alta		; carregamento da parte alta
+			ROL				; rotacao da parte alta para a esquerda
+			STA aux_parte_alta		; salva na parte alta
+
+soma_c2:		LDA p_parte_alta		; soma das partes altas e partes baixas da soma anterior com as partes altas e baixas da variavel "c"
+			ADD aux_parte_alta		; deslocada mais uma vez. Caso haja ocorrencia de carry, a parte alta desse resultado e acrescido em 1.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ADD aux_parte_baixa
+			STA p_parte_baixa
+			JNC deslocamento_direita
+			LDA p_parte_alta
+			ADD c1
+			STA p_parte_alta
+
+deslocamento_direita:	LDA p_parte_alta		; Neste trecho de codigo, temos a repeticao do deslocamento da parte alta em uma unidade para a direita
+			SHR				; e a rotacao da parte baixa para a direita. Essa instrucao e repetida 4 vezes.
+			STA p_parte_alta
+			LDA p_parte_baixa
+			ROR
+			JMP continua			; pula para a posicao de memoria 212
+
+ORG 200							; a partir da posicao de memoria 200
+
+a:			DB				; variaveis definidas pelo usuario
+b:			DB
+c:			DB
+d:			DB
+P:			DB				; resposta final
+aux_parte_alta:		DB				; variavel auxiliar referente a parte alta
+aux_parte_baixa:	DB				; variavel auxiliar referente a parte baixa
+aux_2_parte_baixa:	DB				; segunda variavel auxiliar referente a parte baixa
+p_parte_alta:		DB				; variavel auxiliar referente a parte alta que armazena as suas somas
+p_parte_baixa:		DB				; variavel auxiliar referente a parte baixa que armazena as suas somas
+c0:			DB	0			; constante de valor 0
+c1:			DB	1			; constante de valor 1
+
+ORG 212							; a partir da posicao de memoria 212
+
+continua:		STA P
+
+			LDA p_parte_alta
+			SHR 
+			STA p_parte_alta
+			LDA P
+			ROR
+			STA P
+
+			LDA p_parte_alta
+			SHR
+			STA p_parte_alta
+                        LDA P
+			ROR
+			STA P
+
+			LDA p_parte_alta
+			SHR
+			STA p_parte_alta
+                        LDA P
+			ROR
+			STA P				; salva a resposta final na posicao de memoria referente a P
+
+fim:			HLT				; fim do programa
